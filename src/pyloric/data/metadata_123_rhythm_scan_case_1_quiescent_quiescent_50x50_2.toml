@@ -1,0 +1,12 @@
+style = true
+
+[colmetadata]
+
+[metadata]
+bif_params_ab = [[-20.0, 1.0], "default"]
+bif_params_lp = [[-30.0, -2.0], "default"]
+bif_params_py = [[-30.0, -2.0], "default"]
+syn_fast_params = [[0.1, 0.017], "default"]
+syn_slow_params = [[0.02, 0.0005], "default"]
+"synaptic conductances" = ["Main.pyloric_paper.AsyncScanner.PlantNetwork.PlantNeuron.SynapticConductances(0.01, 0.01, 0.004, 0.009, 0.009, 0.009)", "default"]
+tmax = [300000, "default"]
