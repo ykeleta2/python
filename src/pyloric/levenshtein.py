@@ -17,7 +17,7 @@ def optimal_string_alignment_distance(s1, s2):
     for i in range(0, m-1):
        # print("i ",i)
         v2[0]=i+1
-        print("v2: ",v2)
+      #  print("v2: ",v2)
         for j in range(0, n-1):
            # print("i: ", i, "j: ",j)
             deleteCost=v1[j+1] + 1
@@ -34,7 +34,7 @@ def optimal_string_alignment_distance(s1, s2):
         #print("v2: ",v2)
     v1=v2
     # Return the edit distance
-    print(v1)
+   # print(v1)
     return v1[n]
 
-print(optimal_string_alignment_distance([1,2,2,3,6],[1,2,3,3,3,6]))#"geeks", "forgeeks")) g=1,e=2,k=3,f=4,o=5,s=6,r=7
+print(optimal_string_alignment_distance([1,2,2,3,6,0],[1,2,3,3,3,6]))#"geeks", "forgeeks")) g=1,e=2,k=3,f=4,o=5,s=6,r=7

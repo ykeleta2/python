@@ -4,17 +4,11 @@ import csv,pandas as pd, numpy as np
 class Distances:
       
     def __init__(self):
-        self.dir="src/pyloric/data"
-        self.fname="combined_spike_patterns.csv" #"temp_patterns.csv" 
+        self.dir ="src/pyloric/data"
+        self.fname = "temp_patterns2.csv" #"combined_spike_patterns.csv" #
     
     def read_file(self):
         full_name=self.dir+'/'+self.fname
-        #input = np.loadtxt(full_name, dtype='i', delimiter=',')
-        #with open(full_name) as csvfile:
-         #   reader = csv.reader(csvfile, delimiter=',', quotechar='|')
-         #   for row in reader:
-         #       print(row[0])
-               # print(', '.join(row[0]))
         df=pd.read_csv(full_name,dtype={'spike_patterns': 'string'},skiprows=0)
         df = df.reset_index()
 
@@ -32,35 +26,35 @@ class Distances:
                 df.at[i,'spike_patterns'] = 'x' 
  
         return df.iloc[:,3].values, max_length
+    
+    def handle_pattern(self):
+        
+        full_name=self.dir+'/'+self.fname
+        for i, df in enumerate(pd.read_csv(full_name, chunksize=1000)):
+            alpha=df['α_fast']
+            beta=df['β_fast']
+            #pattern=df['spike_patterns']
 
-     #def calculate_pairwise(self,v):
-     #   n=len(v)
-     #   print(n*n)
-     #   results=np.zeros((n,n))
-       # print(n)
-     #   for i in range(0,n):
-     #       for j in range(0,i):
-     #           if (i*j)%1000==0:
-     #               print(i,",",j,i*j)
+            max_length=df.spike_patterns.dropna().map(len).max() #if not df.empty() else 0
+            
+            df['converted_spike_pattern']=df['spike_patterns'].str.replace('a','1').str.replace('l','2').str.replace('p','3').str.replace('t','4')
+            df['converted_spike_pattern']=df['converted_spike_pattern'].str.pad(max_length,side='right',fillchar='0')
+            #df['converted']=self.convert_to_num_array(pattern,max_length)
+            df.to_csv(self.dir+'/'+'converted_temp.csv', columns=['α_fast','β_fast','spike_patterns','converted_spike_pattern'], index=False, mode='w', header=True)
 
-     #           results[i,j]=damerau_levenshtein_distance(v[i],v[j])
+ 
 
-     #   print("done")
-     #   return results
-        """
-        function calculate_pairwise(vec,l=false)
+    def convert_to_num_array(self,spike_pattern,max_length):
 
-            n=length(vec)
-            results=zeros(Int32,n,n)
-            Threads.@threads for i in 1:n 
+        converted_patterns=list()
+        for i,pattern in spike_pattern.items():
+            num_array=(self.convert_to_symbol(pattern))
+            num_array=np.pad(num_array,(0,max_length-len(num_array)),'constant')
+            converted_patterns.append(num_array)
 
-                @inbounds for j in 1:i 
-                    results[j,i]=DamerauLevenshtein()(vec[i],vec[j])
-                end
-            end
-            Symmetric(results)
-        end
-        """
+        
+        return np.array(converted_patterns)
+
     def get_spikes_as_num_array(self):
         spike_patterns, max_length = self.read_file()
        
@@ -111,8 +105,9 @@ class Distances:
 #d=damerau_levenshtein_distance('smtih', 'smiadfadsfasdfth')  # expected result: 1
 #print(d)
 dist=Distances()
+dist.handle_pattern()
 #print(vec)
-print(dist.get_spikes_as_num_array())
+#print(dist.get_spikes_as_num_array())
 #print(type(dist.get_spikes_as_num_array()[1]))
 #arr=dist.get_spikes_as_num_array()[1]
 #print(np.pad(arr,(0,90-len(arr)),'constant'))
