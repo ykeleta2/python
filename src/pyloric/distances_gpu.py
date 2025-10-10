@@ -21,11 +21,14 @@ def string_distance(s1,s2):
 	m=len(s1) 
 	n=len(s2) 
 
-	v1=cuda.local.array(shape=1,dtype=numba.float64)
-	v2=cuda.local.array(shape=1,dtype=numba.float64)
+	v1=cuda.local.array(shape=1,dtype=numba.int64)
+	v2=cuda.local.array(shape=1,dtype=numba.int64)
 
 	for i in range(0,n):
 		v1[i]=i
+
+	for j in range(0,m):
+		v2[j]=0
 
 	# Initialize the table
 	# Populate the table using dynamic programming
@@ -54,7 +57,7 @@ def convert_to_num_array(spike_pattern):
 	return np.array(converted_patterns)
 
 def read_converted_spikes():
-	full_name = "src/pyloric/data/converted_temp.csv" 
+	full_name = "src/pyloric/data/converted_spike_patterns.csv" 
 
 	df=pd.read_csv(full_name,dtype={'converted_spike_pattern': 'string'},skiprows=0)
 	df = df.reset_index()
@@ -77,39 +80,58 @@ def convert_to_array(pattern):
 	return np.array(lst)
 
 
-def find_distance():
-	threads_per_block = 256
-	blocks_per_grid = 256#(N + threads_per_block - 1) // threads_per_block
+def run_calculation():
 
-	# Copy data to the device
-	a=[1,2,2,3,6,6]
-	b=[4,5,7,1,2,6]
+	#a=[1,2,2,3,6,6]
+	#b=[4,5,7,1,2,6]
 	c=[4,5,7,3,1,7]
 	d=[1,3,2,2,5,7]
-	e=[1,3,2,2,6,7]
+	e=[1,3,2,2,6,7]	
+	a=[1,1]
+	b=[1,1]
+	a1=np.array([a,b])
+ 
+	# Write out output file shell
+	with open('src/pyloric/data/output.csv', mode='w', newline='') as empty_file:
+		pass
 
+	input_file='src/pyloric/data/converted_temp.csv'
 	
-	a1=np.array([a,b,c,d,e])
-	#print("type is: ",type(a1))
-	#dist = Distances()
-	#a1=dist.get_spikes_as_num_array()
+	#for chunk in pd.read_csv(input_file,chunksize=10): #i, df in enumerate(pd.read_csv(input_file, chunksize=10)): 
+	#	lst=list() 
+	#		for converted_spike_pattern in chunk['converted_spike_pattern']:			 
+	#			lst.append(convert_to_array(converted_spike_pattern))
+
+	#		a = np.array(lst)	
+	send_chunk_to_cpu(a1)
+		#print(lst)
 	#a1=np.array(read_converted_spikes())
-	print("type is: ",type(a1))
-	print("shape: (",a1.shape[0],a1.shape[1],")")
+	#print("type is: ",type(a1))
+	#print("shape: (",a1.shape[0],a1.shape[1],")")
 	#a1=np.ndarray(len([a,b,c,d]), dtype=np.ndarray)
 	#a1=cuda.to_device(a)
 	#a2=cuda.to_device(b)
 	#gpu_results=cuda.to_device(np.ndarray(shape=(a1.shape[0],a1.shape[0])))
 	
-	gpu_results=cuda.to_device(np.ndarray(shape=(len(a1),len(a1))))
+def send_chunk_to_cpu(a1):
+	threads_per_block = 256
+	blocks_per_grid = 256#(N + threads_per_block - 1) // threads_per_block
+	
+	gpu_results=cuda.to_device(np.ndarray(shape=(len(a1),len(a1)),dtype=int))
+	
 	# Launch the kernel
 	get_string_distances[blocks_per_grid, threads_per_block](a1,gpu_results)
 	res = gpu_results.copy_to_host()
+	print(type(res))
 	print("Got ",len(res), " results")
 	print("shape: ",res.shape)
 	print(res)
- 
+	#with open('src/pyloric/data/output.csv', mode='a', newline='') as output_file:
+	#	writer=csv.writer(output_file)
+	#	for x in res:
+	#		writer.writerow(x)
+	
 
 #find_distance()
-find_distance()
+run_calculation()
 #print(read_converted_spikes())

@@ -5,7 +5,7 @@ class Distances:
       
     def __init__(self):
         self.dir ="src/pyloric/data"
-        self.fname = "temp_patterns2.csv" #"combined_spike_patterns.csv" #
+        self.fname = "combined_spike_patterns.csv" #"temp_patterns2.csv"  
     
     def read_file(self):
         full_name=self.dir+'/'+self.fname
@@ -40,7 +40,7 @@ class Distances:
             df['converted_spike_pattern']=df['spike_patterns'].str.replace('a','1').str.replace('l','2').str.replace('p','3').str.replace('t','4')
             df['converted_spike_pattern']=df['converted_spike_pattern'].str.pad(max_length,side='right',fillchar='0')
             #df['converted']=self.convert_to_num_array(pattern,max_length)
-            df.to_csv(self.dir+'/'+'converted_temp.csv', columns=['α_fast','β_fast','spike_patterns','converted_spike_pattern'], index=False, mode='w', header=True)
+            df.to_csv(self.dir+'/'+'converted_spike_patterns.csv', columns=['α_fast','β_fast','converted_spike_pattern'], index=False, mode='a', header=True)
 
  
 
