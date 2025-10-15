@@ -1,7 +1,6 @@
 from numba import cuda, numba
 import numpy as np,csv,pandas as pd
-from distances import Distances
-
+import time
 
 #class GPUDistance:
 	#def __init__(self):
@@ -10,10 +9,13 @@ from distances import Distances
 
 
 @cuda.jit
-def get_string_distances(a,c,):
+def get_string_distances(a,x,y,output,):
 	row, col = cuda.grid(2)
-	if row < a.shape[0] and col < a.shape[0]:
-		c[row,col] = string_distance(a[row],a[col])
+	l=len(a)
+	if row < x and col < y:
+		s1_coord=int(row/l+row%l)
+		s2_coord=int(col/l+col%l)
+		output[row,col] = string_distance(a[s1_coord],a[s2_coord]) # c[row][col] ??
 			
 
 @cuda.jit('int64(int64[:],int64[:])',device=True) 
@@ -105,18 +107,23 @@ def run_calculation():
 	with open('src/pyloric/data/output.csv', mode='w', newline='') as empty_file:
 		pass
 
-	input_file='src/pyloric/data/converted_temp.csv'
+	input_file='src/pyloric/data/converted_spike_patterns.csv'
 	
-	chunk_size=50
+	chunk_size=5000
 	for chunk in pd.read_csv(input_file,chunksize=chunk_size): #i, df in enumerate(pd.read_csv(input_file, chunksize=10)): 
 		lst=list() 
+		print("One time!")
 		for converted_spike_pattern in chunk['converted_spike_pattern']:	
-			print(" -> ",converted_spike_pattern)		 
+		#	print(" -> ",converted_spike_pattern)		 
 			lst.append(convert_to_array(converted_spike_pattern))
 
 		a1 = np.array(lst)	
-	print(a1)
-	send_chunk_to_cpu(a1)
+	#print(a1)
+	t0 = time.time()
+	print(len(a1))
+	#send_chunk_to_gpu(a1)
+	t1 = time.time()
+	print(t1-t0)
 		#print(lst)
 	#a1=np.array(read_converted_spikes())
 	#print("type is: ",type(a1))
@@ -126,14 +133,14 @@ def run_calculation():
 	#a2=cuda.to_device(b)
 	#gpu_results=cuda.to_device(np.ndarray(shape=(a1.shape[0],a1.shape[0])))
 	
-def send_chunk_to_cpu(a1):
-	threads_per_block = (8,8)
+def send_chunk_to_gpu(a1):
+	threads_per_block = (16,16)
 	blocks_per_grid = 16#(N + threads_per_block - 1) // threads_per_block
-	
-	gpu_results=cuda.to_device(np.zeros(shape=(len(a1),len(a1)),dtype=int))
+	print("Processing a vector of length: ",len(a1))
+	gpu_results=cuda.to_device(np.zeros(shape=(len(a1)**2,len(a1)**2),dtype=int))
 	
 	# Launch the kernel
-	get_string_distances[blocks_per_grid, threads_per_block](a1,gpu_results)
+	get_string_distances[blocks_per_grid, threads_per_block](a1,len(a1)**2,len(a1)**2,gpu_results)
 	res = gpu_results.copy_to_host()
 	print(type(res))
 	print("Got ",len(res), " results")

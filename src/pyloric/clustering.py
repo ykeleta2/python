@@ -13,7 +13,7 @@ class Clustering:
         #input = np.loadtxt(full_name, dtype='i', delimiter=',')
         with open(full_name) as f:
             lines = (line for line in f if not line.startswith('#'))
-            dist_matrix = np.loadtxt(lines, delimiter=',', skiprows=1)
+            dist_matrix = np.loadtxt(lines, delimiter=',', skiprows=0)
 
         #print(dist_matrix)
         return dist_matrix
@@ -48,5 +48,5 @@ class Clustering:
 
     
 clustering=Clustering()
-clustering.run("distances_matrix_50.csv")   
-  
+#clustering.run("distances_matrix_50.csv")   
+clustering.run("output.csv") 

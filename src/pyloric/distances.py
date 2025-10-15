@@ -5,7 +5,7 @@ class Distances:
       
     def __init__(self):
         self.dir ="src/pyloric/data"
-        self.fname = "combined_spike_patterns.csv" #"temp_patterns2.csv"  
+        self.fname =  "combined_spike_patterns.csv"  #"temp_patterns2.csv" 
     
     def read_file(self):
         full_name=self.dir+'/'+self.fname
