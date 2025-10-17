@@ -15,7 +15,7 @@ class Clustering:
             lines = (line for line in f if not line.startswith('#'))
             dist_matrix = np.loadtxt(lines, delimiter=',', skiprows=0)
 
-        #print(dist_matrix)
+        print(dist_matrix.shape)
         return dist_matrix
 
 
@@ -26,8 +26,9 @@ class Clustering:
         print(dim2)
         d1=int(round(np.sqrt(dim1)))
         d2=int(round(np.sqrt(dim2)))
+        num_clusters=15
         #c = kmedoids.fasterpam(dist_matrix, 10)
-        c = kmedoids.pam(dist_matrix,7,500,"random")
+        c = kmedoids.pam(dist_matrix,num_clusters,500,"random")
         print(len(c.labels))
         print(c)
         cluster_assignments=c.labels
@@ -49,4 +50,5 @@ class Clustering:
     
 clustering=Clustering()
 #clustering.run("distances_matrix_50.csv")   
-clustering.run("output.csv") 
+#clustering.run("distances_matrix_50_levenshtein.csv")   
+clustering.run("output_75x75.csv") 

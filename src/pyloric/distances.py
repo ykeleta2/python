@@ -5,7 +5,9 @@ class Distances:
       
     def __init__(self):
         self.dir ="src/pyloric/data"
-        self.fname =  "combined_spike_patterns.csv"  #"temp_patterns2.csv" 
+        self.grid = "50"
+        self.fname =  f"combined_spike_patterns_{self.grid}x{self.grid}_tst.csv"  #"temp_patterns2.csv" 
+
     
     def read_file(self):
         full_name=self.dir+'/'+self.fname
@@ -28,19 +30,31 @@ class Distances:
         return df.iloc[:,3].values, max_length
     
     def handle_pattern(self):
+        output_fname="converted_spike_patterns"
+        with open(self.dir+'/'+f'{output_fname}_{self.grid}x{self.grid}.csv', mode='w', newline='', encoding="utf-8") as empty_file:
+            writer = csv.writer(empty_file)
+            writer.writerow(["α_fast","β_fast","converted_spike_pattern"])
         
-        full_name=self.dir+'/'+self.fname
-        for i, df in enumerate(pd.read_csv(full_name, chunksize=1000)):
+        input_fname=self.dir+'/'+self.fname
+
+        df=pd.read_csv(input_fname)
+        max_length=df.spike_patterns.dropna().map(len).max() #if not df.empty() else 0
+        print("max length: ",max_length)
+
+        
+        for i, df in enumerate(pd.read_csv(input_fname, chunksize=1000)):
             alpha=df['α_fast']
             beta=df['β_fast']
             #pattern=df['spike_patterns']
-
-            max_length=df.spike_patterns.dropna().map(len).max() #if not df.empty() else 0
-            
-            df['converted_spike_pattern']=df['spike_patterns'].str.replace('a','1').str.replace('l','2').str.replace('p','3').str.replace('t','4')
+        
+ 
+            df['converted_spike_pattern']=df['spike_patterns'].str.replace('a','1').str.replace('l','2').str.replace('p','3').str.replace('t','0')
+           # df.fillna({'converted_spike_pattern':0},inplace=True)
+            df['converted_spike_pattern']=df['converted_spike_pattern'].fillna('0')
             df['converted_spike_pattern']=df['converted_spike_pattern'].str.pad(max_length,side='right',fillchar='0')
+
             #df['converted']=self.convert_to_num_array(pattern,max_length)
-            df.to_csv(self.dir+'/'+'converted_spike_patterns.csv', columns=['α_fast','β_fast','converted_spike_pattern'], index=False, mode='a', header=True)
+            df.to_csv(self.dir+f'/{output_fname}_{self.grid}x{self.grid}.csv', columns=['α_fast','β_fast','converted_spike_pattern'], index=False, mode='a', header=False)
 
  
 
