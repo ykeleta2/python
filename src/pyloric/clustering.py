@@ -26,7 +26,7 @@ class Clustering:
         print(dim2)
         d1=int(round(np.sqrt(dim1)))
         d2=int(round(np.sqrt(dim2)))
-        num_clusters=15
+        num_clusters=7
         #c = kmedoids.fasterpam(dist_matrix, 10)
         c = kmedoids.pam(dist_matrix,num_clusters,500,"random")
         print(len(c.labels))
@@ -51,4 +51,4 @@ class Clustering:
 clustering=Clustering()
 #clustering.run("distances_matrix_50.csv")   
 #clustering.run("distances_matrix_50_levenshtein.csv")   
-clustering.run("output_75x75.csv") 
+clustering.run("output_75x75_symmetrical.csv") 

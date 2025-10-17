@@ -61,19 +61,13 @@ def read_converted_spikes():
 	lst=list()
 	for i, row in df.iterrows():
 		pattern = df.at[i,'converted_spike_pattern']
-		#print(convert_to_array(pattern))
 		lst.append(convert_to_array(pattern))
-		#length = 0 if pd.isnull(pattern) else len(pattern)
+
 
 	#return df.iloc[:,4].values #, max_length   
 	return lst	
 
 def convert_to_array(pattern):
-	#lst=list()
-	#for s in pattern:
-	#	lst.append(int(s))
-	
-	#return np.array(lst)
 	return [int(x) for x in str(pattern)]
 
  
@@ -90,35 +84,35 @@ def run_calculation():
 	g="10000000000000000000000000000000000000000000000000003111111232323232323232131111112323232323232321311111123232323232323213111111232323232323232131111112323232323232321311111123232323232000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 	h="10000000000000000000000000000000000000000000000000011111122222333333333311111112222223333333111111122222233333333311111112222223333333111111122222323333333311111112222223333333000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 	
-	a1=np.array([convert_to_array(g),convert_to_array(h)],dtype=np.int16)
+	#a1=np.array([convert_to_array(g),convert_to_array(h)],dtype=np.int16)
  
-	#grid=75
+	grid=75
 	# Write out output file shell
-	#with open(f'src/pyloric/data/output_{grid}x{grid}.csv', mode='w', newline='') as empty_file:
-	#	pass
+	with open(f'src/pyloric/data/output_{grid}x{grid}.csv', mode='w', newline='') as empty_file:
+		pass
 
 
 	input_file=f'src/pyloric/data/converted_spike_patterns_{grid}x{grid}.csv'  
 	
 	chunk_size=5000
 	lst=list() 
-	#for chunk in pd.read_csv(input_file,header=0,chunksize=chunk_size):  #i, df in enumerate(pd.read_csv(input_file, chunksize=10)): 
-	#	for i,row in chunk.iterrows(): # converted_spike_pattern in chunk['converted_spike_pattern']:	
+	for chunk in pd.read_csv(input_file,header=0,chunksize=chunk_size):  #i, df in enumerate(pd.read_csv(input_file, chunksize=10)): 
+		for i,row in chunk.iterrows(): # converted_spike_pattern in chunk['converted_spike_pattern']:	
 			#	print(" -> ",converted_spike_pattern)	
-	#		lst.append(convert_to_array(row[2]))
-	#	print("List length: ",len(lst))
+			lst.append(convert_to_array(row[2]))
+		print("List length: ",len(lst))
 	
-	#a1 = np.array(lst,dtype=np.int16)	
+	a1 = np.array(lst,dtype=np.int16)	
 	#print(a1)
 	t0 = time.time()
-#	print(len(a1))
+	print(len(a1))
 	send_chunk_to_gpu(a1)
 	t1 = time.time()
 	print("Total time on GPU: ",t1-t0)
 	
 def send_chunk_to_gpu(a1):
 	threads_per_block = (32,32)
-	blocks_per_grid = (128,128)#(N + threads_per_block - 1) // threads_per_block
+	blocks_per_grid = (256,256)#(N + threads_per_block - 1) // threads_per_block
 	print("Processing a vector of length: ",len(a1))
 	gpu_results=cuda.to_device(np.zeros(shape=(len(a1),len(a1)),dtype=np.int16))
 	
@@ -129,10 +123,19 @@ def send_chunk_to_gpu(a1):
 	print("Got ",len(res), " results")
 	print("shape: ",res.shape)
 	print(res)
-	#with open(f'src/pyloric/data/output_{grid}x{grid}.csv', mode='a', newline='') as output_file:
-	#	writer=csv.writer(output_file)
-	#	for x in res:
-	#		writer.writerow(x)
+	with open(f'src/pyloric/data/output_{grid}x{grid}.csv', mode='a', newline='') as output_file:
+		writer=csv.writer(output_file)
+		for x in res:
+			writer.writerow(x)
+
+def convert_to_symmetrical_matrix():
+	df=pd.read_csv(f'src/pyloric/data/output_{grid}x{grid}.csv',header=None)
+	mat=df.to_numpy()
+	res=mat + mat.T
+	print("writing matrix ",res.shape)
+	with open(f'src/pyloric/data/output_{grid}x{grid}_symmetrical.csv',mode='w',newline='') as out_file:
+		writer=csv.writer(out_file)
+		writer.writerows(res)
 	
 def test_gpu_standalone():
 	#with open('src/pyloric/data/output.csv', mode='w', newline='') as empty_file:
@@ -151,6 +154,7 @@ def test_gpu_standalone():
 	string_distance(a1[1],a1[1])
 
 #find_distance()
-run_calculation()
+#run_calculation()
+convert_to_symmetrical_matrix()
 #test_gpu_standalone()
 

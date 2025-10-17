@@ -38,22 +38,17 @@ class Distances:
         input_fname=self.dir+'/'+self.fname
 
         df=pd.read_csv(input_fname)
-        max_length=df.spike_patterns.dropna().map(len).max() #if not df.empty() else 0
+        max_length=df.spike_patterns.dropna().map(len).max()  
         print("max length: ",max_length)
 
         
-        for i, df in enumerate(pd.read_csv(input_fname, chunksize=1000)):
-            alpha=df['α_fast']
-            beta=df['β_fast']
-            #pattern=df['spike_patterns']
-        
+        for i, df in enumerate(pd.read_csv(input_fname, chunksize=1000)):  
  
             df['converted_spike_pattern']=df['spike_patterns'].str.replace('a','1').str.replace('l','2').str.replace('p','3').str.replace('t','0')
-           # df.fillna({'converted_spike_pattern':0},inplace=True)
             df['converted_spike_pattern']=df['converted_spike_pattern'].fillna('0')
             df['converted_spike_pattern']=df['converted_spike_pattern'].str.pad(max_length,side='right',fillchar='0')
 
-            #df['converted']=self.convert_to_num_array(pattern,max_length)
+            
             df.to_csv(self.dir+f'/{output_fname}_{self.grid}x{self.grid}.csv', columns=['α_fast','β_fast','converted_spike_pattern'], index=False, mode='a', header=False)
 
  
@@ -73,8 +68,7 @@ class Distances:
         spike_patterns, max_length = self.read_file()
        
         print("length: ",max_length)
-        #patterns = np.ndarray(len(spike_patterns), dtype=np.ndarray)
-        #patterns=np.array(len(spike_patterns),dtype=int)
+
         patterns=list()
         for i in range(0,len(spike_patterns)):
             symbol = spike_patterns[i]
@@ -85,8 +79,7 @@ class Distances:
                 print("offending one: ", i)
 
             num_array=np.pad(num_array,(0,max_length-len(num_array)),'constant')
-            #print(num_array)
-            #patterns[i]=num_array
+
             patterns.append(num_array)
         return np.array(patterns)
     
