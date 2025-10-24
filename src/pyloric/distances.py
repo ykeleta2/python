@@ -5,8 +5,8 @@ class Distances:
       
     def __init__(self):
         self.dir ="src/pyloric/data"
-        self.grid = "50"
-        self.fname =  f"combined_spike_patterns_{self.grid}x{self.grid}_tst.csv"  #"temp_patterns2.csv" 
+        self.grid = "100"
+        self.fname =  f"combined_spike_patterns_{self.grid}x{self.grid}_3.csv"  #"temp_patterns2.csv" 
 
     
     def read_file(self):
@@ -31,7 +31,7 @@ class Distances:
     
     def handle_pattern(self):
         output_fname="converted_spike_patterns"
-        with open(self.dir+'/'+f'{output_fname}_{self.grid}x{self.grid}.csv', mode='w', newline='', encoding="utf-8") as empty_file:
+        with open(self.dir+'/'+f'{output_fname}_{self.grid}x{self.grid}_3.csv', mode='w', newline='', encoding="utf-8") as empty_file:
             writer = csv.writer(empty_file)
             writer.writerow(["α_fast","β_fast","converted_spike_pattern"])
         
@@ -42,7 +42,7 @@ class Distances:
         print("max length: ",max_length)
 
         
-        for i, df in enumerate(pd.read_csv(input_fname, chunksize=1000)):  
+        for i, df in enumerate(pd.read_csv(input_fname, chunksize=10000)):  
  
             df['converted_spike_pattern']=df['spike_patterns'].str.replace('a','1').str.replace('l','2').str.replace('p','3').str.replace('t','0')
             df['converted_spike_pattern']=df['converted_spike_pattern'].fillna('0')

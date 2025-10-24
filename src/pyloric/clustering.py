@@ -1,6 +1,7 @@
 import kmedoids
 import numpy as np, csv
 import matplotlib as plt, matplotlib.pyplot as pyplot
+import tables as tb
 
 
 class Clustering:
@@ -11,12 +12,16 @@ class Clustering:
     def load_data(self, fname):
         full_name=self.dir+'/'+fname
         #input = np.loadtxt(full_name, dtype='i', delimiter=',')
-        with open(full_name) as f:
-            lines = (line for line in f if not line.startswith('#'))
-            dist_matrix = np.loadtxt(lines, delimiter=',', skiprows=0)
+        #with open(full_name) as f:
+        #    lines = (line for line in f if not line.startswith('#'))
+        #    dist_matrix = np.loadtxt(lines, delimiter=',', skiprows=0)
+        read_file=tb.open_file(full_name,mode="r")
+        dist_matrix=read_file.root.data.out_array.read()
 
+        read_file.close()
+        print(type(dist_matrix))
         print(dist_matrix.shape)
-        return dist_matrix
+        return dist_matrix.astype(float)
 
 
     def calculate_clusters(self,dist_matrix):
@@ -26,9 +31,9 @@ class Clustering:
         print(dim2)
         d1=int(round(np.sqrt(dim1)))
         d2=int(round(np.sqrt(dim2)))
-        num_clusters=7
+        num_clusters=8
         #c = kmedoids.fasterpam(dist_matrix, 10)
-        c = kmedoids.pam(dist_matrix,num_clusters,500,"random")
+        c = kmedoids.pam(dist_matrix,num_clusters,50,"random")
         print(len(c.labels))
         print(c)
         cluster_assignments=c.labels
@@ -45,10 +50,11 @@ class Clustering:
     def run(self,file_name):
         dist_matrix=self.load_data(file_name)
         assignment_matrix=self.calculate_clusters(dist_matrix)
-        self.plot(assignment_matrix)
+      #  self.plot(assignment_matrix)
 
     
 clustering=Clustering()
+fname="output_300x300.h5" #"distance_matrix_100x100_symmetrical.csv"#
 #clustering.run("distances_matrix_50.csv")   
 #clustering.run("distances_matrix_50_levenshtein.csv")   
-clustering.run("output_75x75_symmetrical.csv") 
+clustering.run(fname) 
